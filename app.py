@@ -40,27 +40,29 @@ df_similarite = compute_similarity(X)
 st.title("🎵 Spotify Music Recommendation App")
 st.markdown("Get personalized music recommendations based on your favorite songs!")
 
-# Song selection
-song_list = sorted(short_spotify_df['track_name'].unique())
-selected_song = st.selectbox("Select a song you've listened to:", song_list)
+# Song input
+selected_song = st.text_input("Enter the title of a song you've listened to:")
 
-if st.button("Get Recommendations", type="primary"):
-    # Get recommendations
-    similaires = df_similarite[selected_song].sort_values(ascending=False)[1:6]
+if st.button("Get Recommendations", type="primary") and selected_song:
+    if selected_song not in short_spotify_df['track_name'].values:
+        st.error("Song not found in our database. Please try another song title.")
+    else:
+        # Get recommendations
+        similaires = df_similarite[selected_song].sort_values(ascending=False)[1:6]
 
-    st.subheader("Top 5 Recommended Songs:")
+        st.subheader("Top 5 Recommended Songs:")
 
-    # Display recommendations
-    for i, song in enumerate(similaires.index, 1):
-        # Get song details
-        song_info = short_spotify_df[short_spotify_df['track_name'] == song].iloc[0]
-        artists = song_info['artists']
+        # Display recommendations
+        for i, song in enumerate(similaires.index, 1):
+            # Get song details
+            song_info = short_spotify_df[short_spotify_df['track_name'] == song].iloc[0]
+            artists = song_info['artists']
 
-        st.markdown(f"""
-        **{i}. {song}**  
-        *Artists:* {artists}
-        ---
-        """)
+            st.markdown(f"""
+            **{i}. {song}**  
+            *Artists:* {artists}
+            ---
+            """)
 
 st.markdown("---")
 st.markdown("Built with Streamlit and machine learning similarity algorithms.")
