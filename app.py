@@ -55,14 +55,10 @@ if st.button("Get Recommendations", type="primary"):
         # Get song details
         song_info = short_spotify_df[short_spotify_df['track_name'] == song].iloc[0]
         artists = song_info['artists']
-        album = song_info['album_name']
-        popularity = song_info['popularity']
 
         st.markdown(f"""
         **{i}. {song}**  
-        *Artists:* {artists}  
-        *Album:* {album}  
-        *Popularity:* {popularity}/100
+        *Artists:* {artists}
         ---
         """)
 
