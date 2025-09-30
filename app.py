@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 def load_data():
     spotify_df = pd.read_csv('dataset.csv')
     spotify_df = spotify_df[spotify_df['duration_ms'] != 0.0]
+    spotify_df = spotify_df.drop_duplicates(subset='track_name', keep='first')
     return spotify_df
 
 spotify_df = load_data()
