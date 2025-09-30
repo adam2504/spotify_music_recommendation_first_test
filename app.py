@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
+from rapidfuzz.process import extractOne
 
 # Load data
 @st.cache_data
@@ -41,29 +42,33 @@ df_similarite = compute_similarity(X)
 st.title("🎵 Spotify Music Recommendation App")
 st.markdown("Get personalized music recommendations based on your favorite songs!")
 
+# Number of recommendations
+num_recs = st.slider("Number of recommendations:", 1, 10, 5)
+
 # Song input
 selected_song = st.text_input("Enter the title of a song you've listened to:")
 
+song_list = sorted(short_spotify_df['track_name'].unique())
+
 if st.button("Get Recommendations", type="primary") and selected_song:
-    if selected_song not in short_spotify_df['track_name'].values:
-        st.error("Song not found in our database. Please try another song title.")
+    selected_song = selected_song.strip()
+    song = None
+    if selected_song in short_spotify_df['track_name'].values:
+        song = selected_song
     else:
-        # Get recommendations
-        similaires = df_similarite[selected_song].sort_values(ascending=False)[1:6]
-
-        st.subheader("Top 5 Recommended Songs:")
-
-        # Display recommendations
-        for i, song in enumerate(similaires.index, 1):
-            # Get song details
-            song_info = short_spotify_df[short_spotify_df['track_name'] == song].iloc[0]
+        best_match = extractOne(selected_song, song_list)
+        if best_match and best_match[1] > 70:
+            song = best_match[0]
+            st.info(f"Couldn't find exact match. Using closest match: '{song}' (similarity: {best_match[1]:.1f}%)")
+        else:
+            st.error("Song not found and no close matches found. Please try another song title.")
+    if song:
+        similaires = df_similarite[song].sort_values(ascending=False)[1:num_recs+1]
+        st.subheader(f"Top {num_recs} Recommended Songs:")
+        for i, rec_song in enumerate(similaires.index, 1):
+            song_info = short_spotify_df[short_spotify_df['track_name'] == rec_song].iloc[0]
             artists = song_info['artists']
-
-            st.markdown(f"""
-            **{i}. {song}**  
-            *Artists:* {artists}
-            ---
-            """)
+            st.markdown(f"**{i}. {rec_song}**  \n*Artists:* {artists}  \n---")
 
 st.markdown("---")
 st.markdown("Built with Streamlit and machine learning similarity algorithms.")
